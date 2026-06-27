@@ -10,6 +10,8 @@ GO
 =====================================================================
 ===
 
+
+
 CREATE TABLE Roles (
     RoleID INT IDENTITY(1,1) PRIMARY KEY,
     RoleName NVARCHAR(50) NOT NULL UNIQUE,
@@ -74,7 +76,7 @@ CREATE TABLE Products (
     CategoryID INT NOT NULL,
     BrandID INT NOT NULL,
     OriginalPrice DECIMAL(18,2) NOT NULL CHECK (OriginalPrice >= 0), -- Giá nhập tham chiếu
-SellPrice DECIMAL(18,2) NOT NULL CHECK (SellPrice >= 0),     -- Giá bán bán lẻ
+    SellPrice DECIMAL(18,2) NOT NULL CHECK (SellPrice >= 0),     -- Giá bán bán lẻ
     DiscountPrice DECIMAL(18,2) NULL CHECK (DiscountPrice >= 0), -- Giá sau giảm (nếu có)
     MainImageURL VARCHAR(255) NOT NULL,
     DescriptionText NVARCHAR(MAX),
@@ -85,16 +87,23 @@ SellPrice DECIMAL(18,2) NOT NULL CHECK (SellPrice >= 0),     -- Giá bán bán l
     CONSTRAINT FK_Products_Brands FOREIGN KEY (BrandID) REFERENCES Brands(BrandID)
 );
 
--- Lưu nhiều hình ảnh phụ của linh kiện
+-- 1. Kiểm tra và xóa bảng ProductImages cũ nếu nó đang tồn tại
+IF OBJECT_ID('dbo.ProductImages', 'U') IS NOT NULL
+    DROP TABLE dbo.ProductImages;
+GO
+
+-- 2. Tiến hành tạo lại bảng mới với cấu trúc chuẩn đồng bộ mã Java
 CREATE TABLE ProductImages (
-    ImageID INT IDENTITY(1,1) PRIMARY KEY,
-    ProductID INT NOT NULL,
-    ImageURL VARCHAR(255) NOT NULL,
-    DisplayOrder INT DEFAULT 0,
-    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
+    ImageID INT IDENTITY(1,1) PRIMARY KEY,     -- Mã ID tự tăng
+    ProductID INT NOT NULL,                     -- Khóa ngoại liên kết bảng Products
+    ImageURL NVARCHAR(MAX) NOT NULL,            -- Đường dẫn ảnh (hỗ trợ link dài vô hạn)
+    DisplayOrder INT DEFAULT 1,                 -- Thứ tự hiển thị ảnh (1, 2, 3...)
+    
+    -- Ràng buộc khóa ngoại: Xóa sản phẩm thì tự động xóa hết loạt ảnh phụ đi kèm
+    CONSTRAINT FK_ProductImages_Products FOREIGN KEY (ProductID) 
+        REFERENCES Products(ProductID) ON DELETE CASCADE
 );
-
-
+GO
 
 
 
@@ -213,7 +222,7 @@ CREATE TABLE Reviews (
     CreatedAt DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_Reviews_Users FOREIGN KEY (UserID) REFERENCES Users(UserID),
     CONSTRAINT FK_Reviews_Products FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
-);
+); 
 GO
 
 -- Index tăng tốc tìm kiếm sản phẩm theo danh mục và thương hiệu
@@ -271,8 +280,7 @@ VALUES
 ('Kingston', N'USA');
 
 SELECT * FROM Brands;
-SELECT * FROM Bills;
-SELECT * FROM BillDetails;
+
 SELECT * FROM Products;
 
 
@@ -346,3 +354,5 @@ SELECT COUNT(ProductID) AS TotalProducts FROM Products;
 
 -- 4. Đếm tổng số khách hàng/người dùng
 SELECT COUNT(UserID) AS TotalUsers FROM Users WHERE RoleID = 2; -- Giả sử RoleID = 2 là Khách hàng
+
+ALTER TABLE Products ADD StockQuantity INT NOT NULL DEFAULT 0;
