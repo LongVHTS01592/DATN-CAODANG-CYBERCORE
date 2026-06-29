@@ -258,3 +258,24 @@ INSERT INTO Products (ProductName, CategoryID, BrandID, OriginalPrice, SellPrice
 (N'ASUS TUF B760M Plus',5,3,4200000,4890000,'mb5.jpg',N'Mainboard TUF', 12),
 (N'MSI MAG B650 Tomahawk',5,4,5200000,5990000,'mb6.jpg',N'Mainboard AMD', 8);
 GO
+
+-- ==========================================
+-- 8. TẠO BẢNG NHẬT KÝ HỆ THỐNG (SYSTEM LOGS)
+-- ==========================================
+CREATE TABLE SystemLogs (
+    LogID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NULL, -- NULL nếu là log hệ thống tự phát sinh
+    LogLevel VARCHAR(20) DEFAULT 'INFO', -- Phân loại: INFO, WARN, ERROR, COMMAND
+    LogMessage NVARCHAR(500) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_SystemLogs_Users FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE SET NULL
+);
+GO
+
+-- Chèn một số Log mẫu và cái Easter Egg của Long
+INSERT INTO SystemLogs (LogLevel, LogMessage) VALUES 
+('INFO', N'Hệ thống CyberCore Application Server khởi động thành công.'),
+('INFO', N'Kết nối cơ sở dữ liệu SQL Server: SUCCESS.'),
+('WARN', N'Cảnh báo: CPU Intel Core i9-14900K tồn kho dưới mức an toàn.'),
+('COMMAND', N'User LongCate tried to use /gamemode creative. Tưởng đây là server SMP à? Permission denied!');
+GO
