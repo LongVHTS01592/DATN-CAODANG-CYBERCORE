@@ -277,5 +277,4 @@ INSERT INTO SystemLogs (LogLevel, LogMessage) VALUES
 ('INFO', N'Hệ thống CyberCore Application Server khởi động thành công.'),
 ('INFO', N'Kết nối cơ sở dữ liệu SQL Server: SUCCESS.'),
 ('WARN', N'Cảnh báo: CPU Intel Core i9-14900K tồn kho dưới mức an toàn.'),
-('COMMAND', N'User LongCate tried to use /gamemode creative. Tưởng đây là server SMP à? Permission denied!');
 GO
